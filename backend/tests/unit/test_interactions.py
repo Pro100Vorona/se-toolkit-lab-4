@@ -24,3 +24,45 @@ def test_filter_returns_interaction_with_matching_ids() -> None:
     result = _filter_by_item_id(interactions, 1)
     assert len(result) == 1
     assert result[0].id == 1
+
+def test_filter_excludes_interaction_with_different_learner_id():
+    from app.models.interaction import Interaction
+    from app.routers.interactions import _filter_by_item_id
+    from datetime import datetime
+
+    i1 = Interaction(id=1, item_id=1, learner_id=2, created_at=datetime.now())
+    i2 = Interaction(id=2, item_id=2, learner_id=1, created_at=datetime.now())
+    interactions = [i1, i2]
+
+    filtered = _filter_by_item_id(interactions, item_id=1)
+    assert len(filtered) == 1
+    assert filtered[0].id == 1
+
+def test_sort_interactions_by_created_at_desc():
+    from app.models.interaction import Interaction
+    from app.routers.interactions import _sort_by_created_at 
+    from datetime import datetime, timedelta
+
+    now = datetime.now()
+    i1 = Interaction(id=1, item_id=1, learner_id=1, created_at=now - timedelta(days=2))
+    i2 = Interaction(id=2, item_id=2, learner_id=2, created_at=now - timedelta(days=1))
+    i3 = Interaction(id=3, item_id=3, learner_id=3, created_at=now)
+    interactions = [i1, i2, i3]
+
+    sorted_interactions = _sort_by_created_at(interactions, descending=True)
+    assert sorted_interactions[0].id == 3
+    assert sorted_interactions[1].id == 2
+    assert sorted_interactions[2].id == 1
+
+def test_filter_by_learner_id():
+    from app.models.interaction import Interaction
+    from app.routers.interactions import _filter_by_learner_id 
+    from datetime import datetime
+
+    i1 = Interaction(id=1, item_id=1, learner_id=2, created_at=datetime.now())
+    i2 = Interaction(id=2, item_id=2, learner_id=1, created_at=datetime.now())
+    interactions = [i1, i2]
+
+    filtered = _filter_by_learner_id(interactions, learner_id=2)
+    assert len(filtered) == 1
+    assert filtered[0].id == 1
